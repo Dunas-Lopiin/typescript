@@ -10,16 +10,20 @@ class AccountDigitValidator{
 
     private validation(accountDigit: string): string {
         if(!accountDigit){
-            this.errors += 'account digit: account digit required|';
+            this.errors += 'account digit:account digit required|';
             return '';
         }
 
         if(accountDigit.trim().length !== 1){
-            this.errors += 'account digit: account digit is a single number|';
+            this.errors += 'account digit:account digit is a single number|';
             return '';
         }
         if(!accountDigit.trim){
-            this.errors += 'account digit: the account digit cannot be only spaces|';
+            this.errors += 'account digit:the account digit cannot be only spaces|';
+            return '';
+        }
+        if(!parseInt(accountDigit)){
+            this.errors += 'account digit:the account digit should be a number|';
             return '';
         }
 

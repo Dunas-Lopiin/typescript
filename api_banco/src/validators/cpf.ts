@@ -12,12 +12,12 @@ class CPFValidator{
     private validation(cpf: string): string{
         
         if(cpf.length === 0){
-            this.errors += 'cpf: cpf required|';
+            this.errors += 'cpf:cpf required|';
             return '';
         }
 
         if(!this.regex.test(cpf)){
-            this.errors += 'cpf: cpf invalid|';
+            this.errors += 'cpf:cpf invalid|';
             return '';
         }
         

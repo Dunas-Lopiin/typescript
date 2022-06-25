@@ -13,12 +13,12 @@ class EmailValidator{
     private validation(email:string): string{
 
         if(email.length === 0){
-            this.errors += 'email: email required|';
+            this.errors += 'email:email required|';
             return '';
         }
 
         if(!this.regex.test(email)){
-            this.errors += 'email: this email is invalid|';
+            this.errors += 'email:this email is invalid|';
             return '';
         }
 

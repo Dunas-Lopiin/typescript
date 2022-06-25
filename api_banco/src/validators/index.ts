@@ -1,3 +1,4 @@
+export { PasswordValidator } from './password';
 export {BirthdateValidator} from './birthdate';
 export {NameValidator} from './name';
 export {EmailValidator} from './email';

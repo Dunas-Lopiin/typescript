@@ -9,12 +9,12 @@ class BirthdateValidator{
 
     private validation(birthdate: string): string {
         if(!birthdate){
-            this.errors += 'birthdate: birthdate required|';
+            this.errors += 'birthdate:birthdate required|';
             return '';
         }
 
         if(!new Date(birthdate).getTime()){
-            this.errors += 'birthdate: invalid date|';
+            this.errors += 'birthdate:invalid date|';
             return '';
         }
 

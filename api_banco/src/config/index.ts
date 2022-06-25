@@ -1,9 +1,6 @@
-import * as dotenv from "dotenv";
-
+import dotenv from 'dotenv';
 dotenv.config();
 
-const config = {
-    PORT: process.env.PORT
-}
+const port = process.env.PORT;
 
-export {config};
+export { port };

@@ -10,21 +10,21 @@ class NameValidator{
 
     private validation(name: string): string {
         if(!name){
-            this.errors += 'name: name required|';
+            this.errors += 'name:name required|';
             return '';
         }
 
         if(name.trim().length < 3){
-            this.errors += 'name: name too short|';
+            this.errors += 'name:name too short|';
             return '';
         }
 
         if(name.length > 60){
-            this.errors += 'name: name too long|';
+            this.errors += 'name:name too long|';
         }
 
         if(!name.trim()){
-            this.errors += 'name: the name cannot be only spaces|';
+            this.errors += 'name:the name cannot be only spaces|';
             return '';
         }
 

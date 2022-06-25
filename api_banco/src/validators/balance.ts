@@ -9,16 +9,16 @@ class BalanceValidator{
 
     private validation(balance: string): string{
         if(!balance){
-            this.errors += 'balance: balance required|';
+            this.errors += 'balance:balance required|';
             return '';
         }
         if(!balance.trim()){
-            this.errors += 'balance: the balance cannot be only spaces|';
+            this.errors += 'balance:the balance cannot be only spaces|';
             return '';
         }
 
-        if(!parseInt(balance)){
-            this.errors += 'balance: the balance should be composed of numbers only|';
+        if(!parseFloat(balance)){
+            this.errors += 'balance:the balance should be composed of numbers only|';
             return '';
         }
 
