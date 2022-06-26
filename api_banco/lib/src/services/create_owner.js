@@ -1,22 +1,64 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateOwnerService = void 0;
 const validators_1 = require("../validators");
+const utils_1 = require("../utils");
+const owner_and_account_1 = require("../client/dao/postgres/owner_and_account");
+const account_1 = require("../client/dao/postgres/account");
+const search_owner_1 = require("../client/dao/postgres/search_owner");
+const utils_2 = require("../utils");
 const uuid_1 = require("uuid");
 class CreateOwnerService {
     constructor() {
         this.ownerDataValidator = validators_1.OwnerDataValidator;
+        this.ownerTable = owner_and_account_1.OwnerTable;
+        this.accountTable = account_1.AccountTable;
     }
     execute(owner) {
-        const validOwnerData = new this.ownerDataValidator(owner);
-        if (validOwnerData.errors) {
-            throw new Error(`400: ${validOwnerData.errors}`);
-        }
-        validOwnerData.owner.id = (0, uuid_1.v4)();
-        return {
-            data: validOwnerData.owner,
-            messages: []
-        };
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                let insertOwner;
+                const validOwnerData = new this.ownerDataValidator(owner);
+                const newAccount = (0, utils_2.GenerateAccount)(owner.cpf);
+                if (validOwnerData.errors) {
+                    throw new Error(`400: ${validOwnerData.errors}`);
+                }
+                validOwnerData.owner.id = (0, uuid_1.v4)();
+                const searchOwner = yield (0, search_owner_1.SearchOwner)(owner.cpf);
+                console.log(searchOwner);
+                if (!searchOwner) {
+                    console.log('insertOwner');
+                    insertOwner = yield new this.ownerTable().insert(validOwnerData.owner, newAccount);
+                }
+                else {
+                    insertOwner = yield new this.accountTable().insert(newAccount);
+                    validOwnerData.owner.id = searchOwner;
+                }
+                if (insertOwner) {
+                    return {
+                        data: { owner: validOwnerData.owner,
+                            account: newAccount },
+                        messages: []
+                    };
+                }
+                return {
+                    data: {},
+                    messages: ["an error occurred while creating the owner"]
+                };
+            }
+            catch (error) {
+                throw new utils_1.ExceptionTreatment(error, 500, "an error occurred while inserting owner on database");
+            }
+        });
     }
 }
 exports.CreateOwnerService = CreateOwnerService;

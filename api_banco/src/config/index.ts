@@ -1,6 +1,11 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-const port = process.env.PORT;
+const config = {
+    port: process.env.PORT,
+    POSTGRES: {
+        CONNECTION_STRING: process.env.POSTGRES_CONNECTION_STRING
+    }
+}   
 
-export { port };
+export { config };

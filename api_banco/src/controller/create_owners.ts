@@ -1,19 +1,17 @@
 import { Request, Response } from 'express';
-import { v4 } from 'uuid';
-import { CreateOwnerService, CreateAccountService } from '../services';
+import { CreateOwnerService } from '../services';
 import { CreateResponse } from '../utils';
 
 class CreateOwner{
 
     private ownerService = CreateOwnerService;
-    private accountService = CreateAccountService;
     private createResponse = CreateResponse;
 
-    public handle(req: Request, res: Response){
+    public async handle(req: Request, res: Response){
 
         try{
 
-            const response = new this.ownerService().execute(req.body);
+            const response = await new this.ownerService().execute(req.body);
             this.createResponse.success(res, 201, response);
 
         }

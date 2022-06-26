@@ -17,6 +17,10 @@ class BirthdateValidator{
             this.errors += 'birthdate:invalid date|';
             return '';
         }
+        if(birthdate.length < 10){
+            this.errors += 'birthdate:date too short|';
+            return '';
+        }
 
         return birthdate.trim();
     }

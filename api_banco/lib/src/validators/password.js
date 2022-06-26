@@ -15,6 +15,10 @@ class PasswordValidator {
             this.errors += 'password:password too short|';
             return '';
         }
+        if (!parseInt(password)) {
+            this.errors += 'password:the password should be a number|';
+            return '';
+        }
         if (!password.trim) {
             this.errors += 'password:the password cannot be only spaces|';
             return '';
