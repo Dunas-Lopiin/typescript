@@ -9,8 +9,7 @@ class AccountTable extends PostgresDB{
     
     public async insert (account: Account): Promise<boolean>{
         const client = new Client();
-
-        
+  
         try{
             await client.connect();
             console.log('conectado ao banco novamente');

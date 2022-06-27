@@ -1,5 +1,6 @@
 interface Deposit {
     id: string
+    ownerCpf: string
     agency: string
     agencyDigit: string
     account: string

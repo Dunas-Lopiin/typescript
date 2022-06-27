@@ -3,7 +3,7 @@ import { Router } from 'express';
 
 const route = Router();
 
-route.route('/create/owner')
+route.route('/create')
     .post(new CreateOwner().handle.bind(new CreateOwner()));
 
 

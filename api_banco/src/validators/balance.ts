@@ -22,6 +22,11 @@ class BalanceValidator{
             return '';
         }
 
+        if(parseFloat(balance) < 0){
+            this.errors += 'balance:the balance should be a positive number|';
+            return '';
+        }
+
         return balance;
     }
 }

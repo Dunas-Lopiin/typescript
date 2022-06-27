@@ -1,3 +1,9 @@
 export { APIResponse } from './response';
 export { Owner } from './owner';
 export { Account } from './account';
+export { Balance } from './balance';
+export { Deposit } from './deposit';
+export { Extract } from './extract';
+export { Fee } from './fee';
+export { Transfer } from './transfer';
+export { Withdraw } from './withdraw';
