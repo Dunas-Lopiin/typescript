@@ -13,12 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DepositTable = void 0;
-const _1 = require(".");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const { Client } = require('pg');
 const uuid_1 = require("uuid");
-class DepositTable extends _1.PostgresDB {
+class DepositTable {
     insert(deposit) {
         return __awaiter(this, void 0, void 0, function* () {
             const client = new Client();

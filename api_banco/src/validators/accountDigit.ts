@@ -22,7 +22,7 @@ class AccountDigitValidator{
             this.errors += 'account digit:the account digit cannot be only spaces|';
             return '';
         }
-        if(!parseInt(accountDigit)){
+        if(isNaN(parseInt(accountDigit))){
             this.errors += 'account digit:the account digit should be a number|';
             return '';
         }

@@ -18,41 +18,48 @@ const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const { Client } = require('pg');
 const uuid_1 = require("uuid");
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const utils_1 = require("../../../utils");
 class TransferTable extends _1.PostgresDB {
     insert(transfer) {
         return __awaiter(this, void 0, void 0, function* () {
             const client = new Client();
             try {
+                let equal = (0, utils_1.compareAccounts)(transfer.ownerCpf, transfer.transferCpf, transfer.ownerAccount, transfer.transferAccount, transfer.ownerAccountDigit, transfer.transferAccountDigit, transfer.ownerAgency, transfer.transferAgency, transfer.ownerAgencyDigit, transfer.transferAgencyDigit);
+                if (equal) {
+                    return false;
+                }
                 yield client.connect();
                 console.log('conectado ao banco transfer');
                 const selectOwnerBalanceQuery = `
             SELECT * FROM public.accounts
             WHERE
-                owner_cpf=$1 and 
-                agency=$2 and 
-                agency_digit=$3 and
-                account=$4 and
-                account_digit=$5 and
-                password=$6
-
+            owner_cpf=$1 and 
+            agency=$2 and 
+            agency_digit=$3 and
+            account=$4 and
+            account_digit=$5
             `;
-                const check = yield client.query(selectOwnerBalanceQuery, [transfer.ownerCpf, transfer.ownerAgency, transfer.ownerAgencyDigit, transfer.ownerAccount, transfer.ownerAccountDigit, transfer.ownerPassword]);
-                console.log('conectado ao banco transfer');
-                console.log(check.rows);
+                const check = yield client.query(selectOwnerBalanceQuery, [transfer.ownerCpf, transfer.ownerAgency, transfer.ownerAgencyDigit, transfer.ownerAccount, transfer.ownerAccountDigit]);
+                const compare = bcrypt_1.default.compareSync(transfer.ownerPassword, check.rows[0].password);
+                console.log(compare);
+                if (!compare) {
+                    return false;
+                }
+                console.log('conectado ao banco transfer2');
                 let ownerBalance = check.rows[0];
                 let ownerId = ownerBalance.id;
                 const selectBalanceQuery = `
             SELECT * FROM public.accounts
             WHERE
-                owner_cpf=$1 and 
-                agency=$2 and 
-                agency_digit=$3 and
-                account=$4 and
-                account_digit=$5
+                agency=$1 and 
+                agency_digit=$2 and
+                account=$3 and
+                account_digit=$4
             `;
-                const transferCheck = yield client.query(selectBalanceQuery, [transfer.transferCpf, transfer.transferAgency, transfer.transferAgencyDigit, transfer.transferAccount, transfer.transferAccountDigit]);
-                let transferBalance = transferCheck.rows[0];
-                let transferId = transferBalance.id;
+                const check2 = yield client.query(selectBalanceQuery, [transfer.transferAgency, transfer.transferAgencyDigit, transfer.transferAccount, transfer.transferAccountDigit]);
+                console.log(check2.rows);
+                let transferId = check2.rows[0].id;
                 if (!transferId || !ownerId) {
                     return false;
                 }
@@ -118,17 +125,15 @@ class TransferTable extends _1.PostgresDB {
                 UPDATE public.accounts SET balance = balance - $1
                 WHERE
                     owner_cpf=$2 and 
-                    password=$3 and 
-                    agency=$4 and 
-                    agency_digit=$5 and
-                    account=$6 and
-                    account_digit=$7
+                    agency=$3 and 
+                    agency_digit=$4 and
+                    account=$5 and
+                    account_digit=$6
                     RETURNING balance
                 `;
                     const ownerBalance = yield client.query(alterBalanceOwner, [
                         newFee,
                         transfer.ownerCpf,
-                        transfer.ownerPassword,
                         transfer.ownerAgency,
                         transfer.ownerAgencyDigit,
                         transfer.ownerAccount,

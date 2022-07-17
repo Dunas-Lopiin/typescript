@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 const { Client } = require('pg');
 import { v4 } from 'uuid';
+import bcrypt from 'bcrypt';
 
 class WithdrawTable extends PostgresDB{
     
@@ -21,11 +22,14 @@ class WithdrawTable extends PostgresDB{
                 agency=$2 and 
                 agency_digit=$3 and
                 account=$4 and
-                account_digit=$5 and
-                password=$6
+                account_digit=$5
 
             `;
-            const check = await client.query(selectBalanceQuery, [withdraw.ownerCpf, withdraw.agency, withdraw.agencyDigit, withdraw.account, withdraw.accountDigit, withdraw.password]);
+            const check = await client.query(selectBalanceQuery, [withdraw.ownerCpf, withdraw.agency, withdraw.agencyDigit, withdraw.account, withdraw.accountDigit]);
+            const compare = bcrypt.compareSync(withdraw.password, check.rows[0].password);
+            if(!compare){
+                return false;
+            }
             let balance = check.rows[0];
             let id = balance.id;
             let atualBalance = parseFloat(balance.balance);

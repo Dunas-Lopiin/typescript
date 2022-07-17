@@ -2,6 +2,7 @@ import { PostgresDB } from ".";
 import { Owner, Account } from "../../../models";
 import dotenv from 'dotenv';
 
+
 dotenv.config();
 const { Client } = require('pg');
 
@@ -21,6 +22,8 @@ class OwnerTable extends PostgresDB{
                 VALUES 
                     ( $1, $2, $3, $4, $5 ) RETURNING id
             `;
+
+            
 
             const result = await client.query(insertUserQuery, [
                 owner.id,

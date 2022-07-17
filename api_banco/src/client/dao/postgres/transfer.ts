@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 const { Client } = require('pg');
 import { v4 } from 'uuid';
+import bcrypt from 'bcrypt';
+import {compareAccounts} from '../../../utils'
 
 class TransferTable extends PostgresDB{
     
@@ -12,36 +14,44 @@ class TransferTable extends PostgresDB{
         const client = new Client();
  
         try{
+            let equal = compareAccounts(transfer.ownerCpf, transfer.transferCpf, transfer.ownerAccount, transfer.transferAccount, transfer.ownerAccountDigit, transfer.transferAccountDigit, transfer.ownerAgency, transfer.transferAgency, transfer.ownerAgencyDigit, transfer.transferAgencyDigit)
+            if(equal){
+                return false;
+            }
             await client.connect();
             console.log('conectado ao banco transfer');
             const selectOwnerBalanceQuery = `
             SELECT * FROM public.accounts
             WHERE
-                owner_cpf=$1 and 
-                agency=$2 and 
-                agency_digit=$3 and
-                account=$4 and
-                account_digit=$5 and
-                password=$6
-
+            owner_cpf=$1 and 
+            agency=$2 and 
+            agency_digit=$3 and
+            account=$4 and
+            account_digit=$5
             `;
-            const check = await client.query(selectOwnerBalanceQuery, [transfer.ownerCpf, transfer.ownerAgency, transfer.ownerAgencyDigit, transfer.ownerAccount, transfer.ownerAccountDigit, transfer.ownerPassword]);
-            console.log('conectado ao banco transfer');
-            console.log(check.rows);
+
+            const check = await client.query(selectOwnerBalanceQuery, [transfer.ownerCpf, transfer.ownerAgency, transfer.ownerAgencyDigit, transfer.ownerAccount, transfer.ownerAccountDigit]);
+            const compare = bcrypt.compareSync(transfer.ownerPassword, check.rows[0].password);
+            console.log(compare);
+            if(!compare){
+                return false;
+            }
+            console.log('conectado ao banco transfer2');
             let ownerBalance = check.rows[0];
             let ownerId = ownerBalance.id;
+            
             const selectBalanceQuery = `
             SELECT * FROM public.accounts
             WHERE
-                owner_cpf=$1 and 
-                agency=$2 and 
-                agency_digit=$3 and
-                account=$4 and
-                account_digit=$5
+                agency=$1 and 
+                agency_digit=$2 and
+                account=$3 and
+                account_digit=$4
             `;
-            const transferCheck = await client.query(selectBalanceQuery, [transfer.transferCpf, transfer.transferAgency, transfer.transferAgencyDigit, transfer.transferAccount, transfer.transferAccountDigit]);
-            let transferBalance = transferCheck.rows[0];
-            let transferId = transferBalance.id;
+
+            const check2 = await client.query(selectBalanceQuery, [transfer.transferAgency, transfer.transferAgencyDigit, transfer.transferAccount, transfer.transferAccountDigit]);
+            console.log(check2.rows)
+            let transferId = check2.rows[0].id;
             
             if(!transferId || !ownerId){
                 return false;
@@ -122,18 +132,16 @@ class TransferTable extends PostgresDB{
                 UPDATE public.accounts SET balance = balance - $1
                 WHERE
                     owner_cpf=$2 and 
-                    password=$3 and 
-                    agency=$4 and 
-                    agency_digit=$5 and
-                    account=$6 and
-                    account_digit=$7
+                    agency=$3 and 
+                    agency_digit=$4 and
+                    account=$5 and
+                    account_digit=$6
                     RETURNING balance
                 `;
                 
                 const ownerBalance = await client.query(alterBalanceOwner, [
                     newFee,
                     transfer.ownerCpf,
-                    transfer.ownerPassword,
                     transfer.ownerAgency,
                     transfer.ownerAgencyDigit,
                     transfer.ownerAccount,
@@ -159,10 +167,6 @@ class TransferTable extends PostgresDB{
                     transfer.transferAccount,
                     transfer.transferAccountDigit
                 ]);
-
-
-
-
 
                 const data = {
                     transfer_out: {

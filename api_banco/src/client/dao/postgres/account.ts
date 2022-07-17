@@ -1,11 +1,10 @@
-import { PostgresDB } from ".";
 import { Account } from "../../../models";
 import dotenv from 'dotenv';
 
 dotenv.config();
 const { Client } = require('pg');
 
-class AccountTable extends PostgresDB{
+class AccountTable {
     
     public async insert (account: Account): Promise<boolean>{
         const client = new Client();

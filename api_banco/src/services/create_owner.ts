@@ -6,6 +6,9 @@ import { AccountTable } from '../client/dao/postgres/account';
 import { SearchOwner } from '../client/dao/postgres/search_owner';
 import { GenerateAccount } from '../utils';
 
+import bcrypt from 'bcrypt';
+const salt = bcrypt.genSaltSync(8);
+
 import { v4 } from 'uuid';
 
 class CreateOwnerService{
@@ -21,6 +24,11 @@ class CreateOwnerService{
             let insertOwner;
             const validOwnerData = new this.ownerDataValidator(owner);
             const newAccount = GenerateAccount(owner.cpf);
+            let bancAccount = newAccount;
+            let password = bancAccount.password;
+            const hash = bcrypt.hashSync(bancAccount.password!, salt);
+            bancAccount.password = hash;
+            console.log(hash)
 
             if(validOwnerData.errors){
                 throw new Error(`400: ${validOwnerData.errors}`);
@@ -31,14 +39,15 @@ class CreateOwnerService{
             console.log(searchOwner);
             if(!searchOwner){
                 console.log('insertOwner');
-                insertOwner = await new this.ownerTable().insert(validOwnerData.owner as Owner, newAccount as Account);
+                insertOwner = await new this.ownerTable().insert(validOwnerData.owner as Owner, bancAccount as Account);
             }
             else{
-                insertOwner = await new this.accountTable().insert(newAccount as Account);
+                insertOwner = await new this.accountTable().insert(bancAccount as Account);
                 validOwnerData.owner.id = searchOwner;
             }
 
             if(insertOwner){
+                newAccount.password = password;
                 return {
                     data: {owner: validOwnerData.owner,
                     account: newAccount},

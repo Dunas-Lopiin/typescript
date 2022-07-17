@@ -16,6 +16,7 @@ exports.CheckBalance = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
 const { Client } = require('pg');
+const bcrypt_1 = __importDefault(require("bcrypt"));
 function CheckBalance(cpf, password, agency, agency_digit, account, account_digit) {
     return __awaiter(this, void 0, void 0, function* () {
         const clientSelect = new Client();
@@ -27,17 +28,17 @@ function CheckBalance(cpf, password, agency, agency_digit, account, account_digi
         SELECT * FROM public.accounts
         WHERE
             owner_cpf=$1 and 
-            password=$2 and 
-            agency=$3 and 
-            agency_digit=$4 and
-            account=$5 and
-            account_digit=$6
+            agency=$2 and 
+            agency_digit=$3 and
+            account=$4 and
+            account_digit=$5
         `;
-            const check = yield clientSelect.query(selectBalanceQuery, [cpf, password, agency, agency_digit, account, account_digit]);
+            const check = yield clientSelect.query(selectBalanceQuery, [cpf, agency, agency_digit, account, account_digit]);
             let balance = check.rows[0];
+            const compare = bcrypt_1.default.compareSync(password, balance.password);
             yield clientSelect.end();
-            console.log(check.rows);
-            if (check.rows.length !== 0) {
+            console.log(compare);
+            if (compare) {
                 return balance;
             }
             return false;

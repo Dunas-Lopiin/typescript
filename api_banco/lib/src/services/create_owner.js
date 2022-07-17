@@ -8,6 +8,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateOwnerService = void 0;
 const validators_1 = require("../validators");
@@ -16,6 +19,8 @@ const owner_and_account_1 = require("../client/dao/postgres/owner_and_account");
 const account_1 = require("../client/dao/postgres/account");
 const search_owner_1 = require("../client/dao/postgres/search_owner");
 const utils_2 = require("../utils");
+const bcrypt_1 = __importDefault(require("bcrypt"));
+const salt = bcrypt_1.default.genSaltSync(8);
 const uuid_1 = require("uuid");
 class CreateOwnerService {
     constructor() {
@@ -29,6 +34,11 @@ class CreateOwnerService {
                 let insertOwner;
                 const validOwnerData = new this.ownerDataValidator(owner);
                 const newAccount = (0, utils_2.GenerateAccount)(owner.cpf);
+                let bancAccount = newAccount;
+                let password = bancAccount.password;
+                const hash = bcrypt_1.default.hashSync(bancAccount.password, salt);
+                bancAccount.password = hash;
+                console.log(hash);
                 if (validOwnerData.errors) {
                     throw new Error(`400: ${validOwnerData.errors}`);
                 }
@@ -37,13 +47,14 @@ class CreateOwnerService {
                 console.log(searchOwner);
                 if (!searchOwner) {
                     console.log('insertOwner');
-                    insertOwner = yield new this.ownerTable().insert(validOwnerData.owner, newAccount);
+                    insertOwner = yield new this.ownerTable().insert(validOwnerData.owner, bancAccount);
                 }
                 else {
-                    insertOwner = yield new this.accountTable().insert(newAccount);
+                    insertOwner = yield new this.accountTable().insert(bancAccount);
                     validOwnerData.owner.id = searchOwner;
                 }
                 if (insertOwner) {
+                    newAccount.password = password;
                     return {
                         data: { owner: validOwnerData.owner,
                             account: newAccount },

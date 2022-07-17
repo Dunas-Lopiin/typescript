@@ -1,4 +1,4 @@
-import { PostgresDB } from ".";
+//import { PostgresDB } from ".";
 import { Deposit } from "../../../models";
 import dotenv from 'dotenv';
 
@@ -6,7 +6,7 @@ dotenv.config();
 const { Client } = require('pg');
 import { v4 } from 'uuid';
 
-class DepositTable extends PostgresDB{
+class DepositTable{
     
     public async insert (deposit: Deposit): Promise<Object>{
         const client = new Client();
