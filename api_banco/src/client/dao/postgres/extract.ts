@@ -11,12 +11,12 @@ async function CheckExtract(cpf: string, password:string, agency: string, agency
     try{
         console.log('searching');
         await clientSelect.connect();
-        console.log('conectado ao banco');
+        console.log('conectado ao banco, pagina de extrato');
 
         const selectBalanceQuery = `
         SELECT * FROM public.accounts
         WHERE
-            owner_cpf=$1 and 
+            owners_cpf=$1 and 
             agency=$2 and 
             agency_digit=$3 and
             account=$4 and
@@ -31,7 +31,7 @@ async function CheckExtract(cpf: string, password:string, agency: string, agency
             return false;
         }
         
-        let id = check.rows[0].id;
+        const id = check.rows[0].id;
         
 
         const selectExtractQuery = `
@@ -42,7 +42,7 @@ async function CheckExtract(cpf: string, password:string, agency: string, agency
         `;
 
         const check2 = await clientSelect.query(selectExtractQuery, [id]);
-        let extract = check2.rows;
+        const extract = check2.rows;
         const accountInfo = {
             cpf: cpf,
             account: account,

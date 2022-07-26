@@ -27,19 +27,28 @@ function CheckBalance(cpf, password, agency, agency_digit, account, account_digi
             const selectBalanceQuery = `
         SELECT * FROM public.accounts
         WHERE
-            owner_cpf=$1 and 
+            owners_cpf=$1 and 
             agency=$2 and 
             agency_digit=$3 and
             account=$4 and
             account_digit=$5
         `;
             const check = yield clientSelect.query(selectBalanceQuery, [cpf, agency, agency_digit, account, account_digit]);
-            let balance = check.rows[0];
+            const balance = check.rows[0];
             const compare = bcrypt_1.default.compareSync(password, balance.password);
             yield clientSelect.end();
             console.log(compare);
             if (compare) {
-                return balance;
+                const data = {
+                    id: balance.id,
+                    owners_cpf: balance.owners_cpf,
+                    agency: balance.agency,
+                    agency_digit: balance.agency_digit,
+                    account: balance.account,
+                    account_digit: balance.account_digit,
+                    balance: balance.balance
+                };
+                return data;
             }
             return false;
         }

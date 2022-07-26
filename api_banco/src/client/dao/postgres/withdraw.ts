@@ -18,7 +18,7 @@ class WithdrawTable extends PostgresDB{
             const selectBalanceQuery = `
             SELECT * FROM public.accounts
             WHERE
-                owner_cpf=$1 and 
+                owners_cpf=$1 and 
                 agency=$2 and 
                 agency_digit=$3 and
                 account=$4 and
@@ -30,21 +30,21 @@ class WithdrawTable extends PostgresDB{
             if(!compare){
                 return false;
             }
-            let balance = check.rows[0];
-            let id = balance.id;
-            let atualBalance = parseFloat(balance.balance);
-            let withdrawValue = parseFloat(withdraw.value);
+            const balance = check.rows[0];
+            const id = balance.id;
+            const atualBalance = parseFloat(balance.balance);
+            const withdrawValue = parseFloat(withdraw.value);
             
-            let fee = 4;
-            let newFee = withdrawValue + fee;
-            let newValue = atualBalance - newFee;
+            const fee = 4;
+            const newFee = withdrawValue + fee;
+            const newValue = atualBalance - newFee;
             
             if(newValue >= 0){
                 console.log('entrou')
                 
                 const insertWithdrawQuery = `
                 INSERT INTO public.extracts
-                    (id, account_id, operation_id, value, created_at) 
+                    (id, account_id, operation_name, value, created_at) 
                 VALUES 
                     ( $1, $2, $3, $4, NOW() ) RETURNING id
                 `;
@@ -52,7 +52,7 @@ class WithdrawTable extends PostgresDB{
                 const result = await client.query(insertWithdrawQuery, [
                     withdraw.id,
                     id,
-                    '4',
+                    'saque',
                     withdraw.value
                 ]);
 
@@ -63,7 +63,7 @@ class WithdrawTable extends PostgresDB{
 
                 const insertFeeQuery = `
                 INSERT INTO public.extracts
-                    (id, account_id, operation_id, value, created_at) 
+                    (id, account_id, operation_name, value, created_at) 
                 VALUES 
                     ( $1, $2, $3, $4, NOW() ) RETURNING id
                 `;
@@ -74,7 +74,7 @@ class WithdrawTable extends PostgresDB{
                 const feeResult = await client.query(insertFeeQuery, [
                     feeId,
                     id,
-                    '5',
+                    'taxa',
                     passFee
                 ]);
 
@@ -86,7 +86,7 @@ class WithdrawTable extends PostgresDB{
                 const alterBalance = `
                 UPDATE public.accounts SET balance = balance - $1
                 WHERE
-                    owner_cpf=$2 and 
+                    owners_cpf=$2 and 
                     password=$3 and 
                     agency=$4 and 
                     agency_digit=$5 and

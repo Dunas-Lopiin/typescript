@@ -27,7 +27,7 @@ function CheckExtract(cpf, password, agency, agency_digit, account, account_digi
             const selectBalanceQuery = `
         SELECT * FROM public.accounts
         WHERE
-            owner_cpf=$1 and 
+            owners_cpf=$1 and 
             agency=$2 and 
             agency_digit=$3 and
             account=$4 and

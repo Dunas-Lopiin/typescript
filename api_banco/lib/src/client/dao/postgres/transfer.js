@@ -25,7 +25,7 @@ class TransferTable extends _1.PostgresDB {
         return __awaiter(this, void 0, void 0, function* () {
             const client = new Client();
             try {
-                let equal = (0, utils_1.compareAccounts)(transfer.ownerCpf, transfer.transferCpf, transfer.ownerAccount, transfer.transferAccount, transfer.ownerAccountDigit, transfer.transferAccountDigit, transfer.ownerAgency, transfer.transferAgency, transfer.ownerAgencyDigit, transfer.transferAgencyDigit);
+                const equal = (0, utils_1.compareAccounts)(transfer.ownerCpf, transfer.transferCpf, transfer.ownerAccount, transfer.transferAccount, transfer.ownerAccountDigit, transfer.transferAccountDigit, transfer.ownerAgency, transfer.transferAgency, transfer.ownerAgencyDigit, transfer.transferAgencyDigit);
                 if (equal) {
                     return false;
                 }
@@ -34,7 +34,7 @@ class TransferTable extends _1.PostgresDB {
                 const selectOwnerBalanceQuery = `
             SELECT * FROM public.accounts
             WHERE
-            owner_cpf=$1 and 
+            owners_cpf=$1 and 
             agency=$2 and 
             agency_digit=$3 and
             account=$4 and
@@ -42,13 +42,12 @@ class TransferTable extends _1.PostgresDB {
             `;
                 const check = yield client.query(selectOwnerBalanceQuery, [transfer.ownerCpf, transfer.ownerAgency, transfer.ownerAgencyDigit, transfer.ownerAccount, transfer.ownerAccountDigit]);
                 const compare = bcrypt_1.default.compareSync(transfer.ownerPassword, check.rows[0].password);
-                console.log(compare);
                 if (!compare) {
                     return false;
                 }
                 console.log('conectado ao banco transfer2');
-                let ownerBalance = check.rows[0];
-                let ownerId = ownerBalance.id;
+                const ownerBalance = check.rows[0];
+                const ownerId = ownerBalance.id;
                 const selectBalanceQuery = `
             SELECT * FROM public.accounts
             WHERE
@@ -59,27 +58,27 @@ class TransferTable extends _1.PostgresDB {
             `;
                 const check2 = yield client.query(selectBalanceQuery, [transfer.transferAgency, transfer.transferAgencyDigit, transfer.transferAccount, transfer.transferAccountDigit]);
                 console.log(check2.rows);
-                let transferId = check2.rows[0].id;
+                const transferId = check2.rows[0].id;
                 if (!transferId || !ownerId) {
                     return false;
                 }
-                let ownerAtualBalance = parseFloat(ownerBalance.balance);
-                let transferValue = parseFloat(transfer.value);
-                let fee = 1;
-                let newFee = transferValue + fee;
-                let newValue = ownerAtualBalance - newFee;
+                const ownerAtualBalance = parseFloat(ownerBalance.balance);
+                const transferValue = parseFloat(transfer.value);
+                const fee = 1;
+                const newFee = transferValue + fee;
+                const newValue = ownerAtualBalance - newFee;
                 if (newValue >= 0) {
                     console.log('entrou');
                     const insertTransferQuery = `
                 INSERT INTO public.extracts
-                    (id, account_id, operation_id, value, created_at) 
+                    (id, account_id, operation_name, value, created_at) 
                 VALUES 
                     ( $1, $2, $3, $4, NOW() ) RETURNING id
                 `;
                     const result = yield client.query(insertTransferQuery, [
                         transfer.id,
                         ownerId,
-                        '3',
+                        'transferência',
                         -transfer.value
                     ]);
                     console.log(result.rows);
@@ -88,7 +87,7 @@ class TransferTable extends _1.PostgresDB {
                     }
                     const insertTransferExtract = `
                 INSERT INTO public.extracts
-                    (id, account_id, operation_id, value, created_at) 
+                    (id, account_id, operation_name, value, created_at) 
                 VALUES 
                     ( $1, $2, $3, $4, NOW() ) RETURNING id
                 `;
@@ -96,16 +95,16 @@ class TransferTable extends _1.PostgresDB {
                     const depositResult = yield client.query(insertTransferExtract, [
                         transferTableId,
                         transferId,
-                        '3',
+                        'transferência',
                         transfer.value
                     ]);
                     console.log(result.rows);
                     if (depositResult.rows.length !== 0) {
-                        console.log("primeiro ok");
+                        console.log("segundo ok");
                     }
                     const insertFeeQuery = `
                 INSERT INTO public.extracts
-                    (id, account_id, operation_id, value, created_at) 
+                    (id, account_id, operation_name, value, created_at) 
                 VALUES 
                     ( $1, $2, $3, $4, NOW() ) RETURNING id
                 `;
@@ -114,17 +113,17 @@ class TransferTable extends _1.PostgresDB {
                     const feeResult = yield client.query(insertFeeQuery, [
                         feeId,
                         ownerId,
-                        '5',
+                        'taxa',
                         passFee
                     ]);
                     console.log(feeResult.rows);
                     if (feeResult.rows.length !== 0) {
-                        console.log("segundo ok");
+                        console.log("terceiro ok");
                     }
                     const alterBalanceOwner = `
                 UPDATE public.accounts SET balance = balance - $1
                 WHERE
-                    owner_cpf=$2 and 
+                    owners_cpf=$2 and 
                     agency=$3 and 
                     agency_digit=$4 and
                     account=$5 and
@@ -142,7 +141,7 @@ class TransferTable extends _1.PostgresDB {
                     const alterBalanceTransfer = `
                 UPDATE public.accounts SET balance = balance + $1
                 WHERE
-                    owner_cpf=$2 and 
+                    owners_cpf=$2 and 
                     agency=$3 and 
                     agency_digit=$4 and
                     account=$5 and

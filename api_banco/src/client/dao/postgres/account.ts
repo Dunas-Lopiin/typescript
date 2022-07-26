@@ -11,11 +11,11 @@ class AccountTable {
   
         try{
             await client.connect();
-            console.log('conectado ao banco novamente');
+            console.log('conectado ao banco, pagina account');
 
             const insertAccountQuery = `
             INSERT INTO public.accounts
-                (id, owner_cpf, password, agency, agency_digit, account, account_digit, balance) 
+                (id, owners_cpf, password, agency, agency_digit, account, account_digit, balance) 
             VALUES 
                 ( $1, $2, $3, $4, $5, $6, $7, $8 ) RETURNING id
             `;
@@ -30,7 +30,7 @@ class AccountTable {
                 account.accountDigit,
                 account.balance
             ]);
-            
+            console.log('operação executada')
             await client.end();
     
             if (result.rows.length !== 0){

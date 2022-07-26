@@ -13,11 +13,11 @@ class DepositTable{
  
         try{
             await client.connect();
-            console.log('conectado ao banco');
+            console.log('conectado ao banco, pagina do deposito');
             const selectBalanceQuery = `
             SELECT * FROM public.accounts
             WHERE
-                owner_cpf=$1 and 
+                owners_cpf=$1 and 
                 agency=$2 and 
                 agency_digit=$3 and
                 account=$4 and
@@ -25,21 +25,20 @@ class DepositTable{
 
             `;
             const check = await client.query(selectBalanceQuery, [deposit.ownerCpf, deposit.agency, deposit.agencyDigit, deposit.account, deposit.accountDigit]);
-            let balance = check.rows[0];
-            let id = balance.id;
-            let atualBalance = parseFloat(balance.balance);
-            let depositValue = parseFloat(deposit.value);
+            const balance = check.rows[0];
+            const id = balance.id;
+            const atualBalance = parseFloat(balance.balance);
+            const depositValue = parseFloat(deposit.value);
             
-            let fee = (depositValue * 0.01);
-            let newFee = depositValue - fee;
-            let newValue = atualBalance + newFee;
+            const fee = (depositValue * 0.01);
+            const newFee = depositValue - fee;
+            const newValue = atualBalance + newFee;
             
             if(newValue >= 0){
-                console.log('entrou')
                 
                 const insertDepositQuery = `
                 INSERT INTO public.extracts
-                    (id, account_id, operation_id, value, created_at) 
+                    (id, account_id, operation_name, value, created_at) 
                 VALUES 
                     ( $1, $2, $3, $4, NOW() ) RETURNING id
                 `;
@@ -47,18 +46,18 @@ class DepositTable{
                 const result = await client.query(insertDepositQuery, [
                     deposit.id,
                     id,
-                    '1',
+                    'deposito',
                     deposit.value
                 ]);
 
                 console.log(result.rows)
                 if (result.rows.length !== 0){
-                    console.log("primeiro ok")
+                    console.log("primeira inserção")
                 }
 
                 const insertFeeQuery = `
                 INSERT INTO public.extracts
-                    (id, account_id, operation_id, value, created_at) 
+                    (id, account_id, operation_name, value, created_at) 
                 VALUES 
                     ( $1, $2, $3, $4, NOW() ) RETURNING id
                 `;
@@ -69,18 +68,18 @@ class DepositTable{
                 const feeResult = await client.query(insertFeeQuery, [
                     feeId,
                     id,
-                    '5',
+                    'taxa',
                     passFee
                 ]);
 
                 if (feeResult.rows.length !== 0){
-                    console.log("segundo ok")
+                    console.log("segunda inserção")
                 } 
 
                 const alterBalance = `
                 UPDATE public.accounts SET balance = balance + $1
                 WHERE
-                    owner_cpf=$2 and 
+                    owners_cpf=$2 and 
                     agency=$3 and 
                     agency_digit=$4 and
                     account=$5 and

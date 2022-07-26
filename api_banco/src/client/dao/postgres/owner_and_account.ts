@@ -37,7 +37,7 @@ class OwnerTable extends PostgresDB{
 
                 const insertAccountQuery = `
                 INSERT INTO public.accounts
-                    (id, owner_cpf, password, agency, agency_digit, account, account_digit, balance) 
+                    (id, owners_cpf, password, agency, agency_digit, account, account_digit, balance) 
                 VALUES 
                     ( $1, $2, $3, $4, $5, $6, $7, $8 ) RETURNING id
                 `;
